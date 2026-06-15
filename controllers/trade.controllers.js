@@ -2,8 +2,8 @@ const trade = require("../models/trade.models.js");
 
 async function getAllTrades(req, res) {
   try {
-    const trades = await trade.find();
-    if (trades.length === 0) {
+    const trades = await trade.findOne({ userId: req.params.id });
+    if (!trades) {
       return res.status(404).json({ error: "No trades found" });
     }
     res.json(trades);
@@ -28,6 +28,7 @@ async function addTrade(req, res) {
       return res.status(400).json({ error: "All fields are required" });
     }
     const newTrade = new trade({
+      userId: req.params.id,
       symbol,
       type,
       quantity,
@@ -46,7 +47,8 @@ async function addTrade(req, res) {
 async function deleteTrade(req, res) {
   try {
     const data = await trade.findOneAndDelete({
-      schemeCode: req.params.schemeCode,
+      userId: req.params.id,
+      symbol: req.params.schemeCode,
     });
     if (!data) {
       return res.status(404).json({ error: "Trade not found" });
@@ -60,7 +62,7 @@ async function deleteTrade(req, res) {
 
 async function clearTrades(req, res) {
   try {
-    const result = await trade.deleteMany({});
+    const result = await trade.deleteMany({ userId: req.params.id });
     res.json({ message: `${result.deletedCount} trades cleared successfully` });
   } catch (err) {
     console.error(err);

@@ -1,6 +1,6 @@
 const user = require("../models/user.models");
 const Portfolio = require("../models/portfolio.models");
-
+const trade = require("../models/trade.models");
 async function getAllUsers(req, res) {
   try {
     const users = await user.find();
@@ -70,10 +70,13 @@ async function updateUser(req, res) {
 async function deleteUser(req, res) {
   try {
     const { id } = req.params;
+    await Portfolio.deleteOne({ userId: id });
+    await trade.deleteMany({ userId: id });
     const deletedUser = await user.findByIdAndDelete(id);
     if (!deletedUser) {
       return res.status(404).json({ error: "User not found" });
     }
+
     res.json({ message: "User deleted successfully" });
   } catch (err) {
     console.error(err);

@@ -10,8 +10,8 @@ const {
 } = require("../controllers/api_data_fetch.controllers.js");
 
 router.get("/", getT50);
-router.get("/:schemeCode", getFundBySchemeCode);
 router.get("/history/:schemeCode", getFundHistory);
 router.put("/history/:schemeCode", replaceFundHistory);
+router.get("/:schemeCode", getFundBySchemeCode);
 
 module.exports = router;

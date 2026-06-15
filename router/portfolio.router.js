@@ -8,6 +8,6 @@ const {
 
 router.get("/:id", getPortfolioById);
 router.patch("/:id/:schemeCode", updatePortfolio);
-router.put("/:id", deleteZeroQuantityFunds);
+router.delete("/:id", deleteZeroQuantityFunds);
 
 module.exports = router;
