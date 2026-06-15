@@ -25,8 +25,6 @@ async function updatePortfolio(req, res) {
           "funds.$.quantity": req.body.quantity,
           "funds.$.avgPrice": req.body.avgPrice,
           "funds.$.currentPrice": req.body.currentPrice,
-          "funds.$.investedAmount": req.body.investedAmount,
-          "funds.$.profitLoss": req.body.profitLoss,
         },
       },
       {
@@ -46,9 +44,7 @@ async function updatePortfolio(req, res) {
               symbol: req.params.schemeCode,
               quantity: req.body.quantity,
               avgPrice: req.body.avgPrice,
-              currentPrice: req.body.currentPrice,
-              investedAmount: req.body.investedAmount,
-              profitLoss: req.body.profitLoss,
+              currentPrice: req.body.currentPrice
             },
           },
         },
@@ -85,7 +81,7 @@ async function deleteZeroQuantityFunds(req, res) {
     }
     res.status(200).json({ message: "Zero quantity funds deleted successfully" });
   } catch (error) {
-    res.status(500).json({ message: "Error deleting zero quantity funds", error });
+    res.status(500).json({ message: "Error deleting portfolio", error });
   }
 }
 

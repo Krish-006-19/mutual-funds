@@ -30,9 +30,9 @@ const portfolioSchema = new mongoose.Schema(
         currentPrice: {
           type: Number,
           required: true,
-        },
-        investedAmount: Number,
-        profitLoss: Number,
+        }
+        // investedAmount: Number,
+        // profitLoss: Number,
       },
     ],
   },

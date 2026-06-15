@@ -2,7 +2,7 @@ const trade = require("../models/trade.models.js");
 
 async function getAllTrades(req, res) {
   try {
-    const trades = await trade.findOne({ userId: req.params.id });
+    const trades = await trade.find({ userId: req.params.id });
     if (!trades) {
       return res.status(404).json({ error: "No trades found" });
     }
