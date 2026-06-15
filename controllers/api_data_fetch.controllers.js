@@ -1,5 +1,5 @@
 const axios = require("axios");
-
+const History = require("../models/api_History_Fetch.models");
 function parseData(body) {
   if (!body) return [];
 
@@ -63,17 +63,34 @@ async function getFundBySchemeCode(req, res) {
 
 async function getFundHistory(req, res) {
   try {
-    const { data } = await axios.get(
-      `${process.env.FUND_HISTORY_API.replace("///", `/${req.params.schemeCode}`)}`,
-    );
+    const val = await History.findOne({ schemeCode: req.params.schemeCode });
+    if (!val) {
+      return res.status(404).json({ error: "No history found for this scheme" });
+    }
+    return res.status(200).json(val.data);
+  } catch (err) {
+    res.status(500).json({ error: "Failed to fetch data" });
+  }
+}
 
+async function replaceFundHistory(req, res) {
+  try {
+    const { schemeCode } = req.params;
+    const { data } = await axios.get(
+      `${process.env.FUND_HISTORY_API.replace("///", `/${schemeCode}`)}`,
+    );
     if (!data || !data.data) {
       return res.status(404).json({ error: "No data found" });
     }
-
-    res.json(data.data.slice(0, data.length));
+    
+    await History.updateOne(
+      { schemeCode },
+      { data: data.data },
+      { upsert: true }
+    );
+    res.json({ message: "History updated successfully"});
   } catch (err) {
-    res.status(500).json({ error: "Failed to fetch data" });
+    res.status(500).json({ error: "Failed to update data" });
   }
 }
 
@@ -81,4 +98,5 @@ module.exports = {
   getT50,
   getFundBySchemeCode,
   getFundHistory,
+  replaceFundHistory
 };
