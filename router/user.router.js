@@ -8,11 +8,11 @@ const {
   updateUser,
   deleteUser,
 } = require("../controllers/users.controllers.js");
-
+const { verifyToken } = require("../middleware/auth.middleware.js");
 router.get("/", getAllUsers);
 router.post("/register", registerUser);
 router.post("/login", loginUser);
-router.patch("/update/:id", updateUser);
-router.delete("/delete/:id", deleteUser);
+router.patch("/update/:id", verifyToken, updateUser);
+router.delete("/delete/:id", verifyToken, deleteUser);
 
 module.exports = router;

@@ -5,9 +5,9 @@ const {
   updatePortfolio,
   deleteZeroQuantityFunds,
 } = require("../controllers/portfolio.controllers");
-
-router.get("/:id", getPortfolioById);
-router.patch("/:id/:schemeCode", updatePortfolio);
-router.delete("/:id", deleteZeroQuantityFunds);
+const {verifyToken} = require("../middleware/auth.middleware");
+router.get("/:id", verifyToken, getPortfolioById);
+router.patch("/:id/:schemeCode", verifyToken, updatePortfolio);
+router.delete("/:id", verifyToken, deleteZeroQuantityFunds);
 
 module.exports = router;

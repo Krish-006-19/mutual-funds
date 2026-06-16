@@ -6,10 +6,10 @@ const {
   deleteTrade,
   clearTrades,
 } = require("../controllers/trade.controllers.js");
-
-router.get("/:id", getAllTrades);
-router.post("/:id/add", addTrade);
-router.delete("/:id/delete/:schemeCode", deleteTrade);
-router.delete("/:id/clear", clearTrades);
+const {verifyToken} = require("../middleware/auth.middleware");
+router.get("/:id", verifyToken, getAllTrades);
+router.post("/:id/add", verifyToken, addTrade);
+router.delete("/:id/delete/:schemeCode", verifyToken, deleteTrade);
+router.delete("/:id/clear", verifyToken, clearTrades);
 
 module.exports = router;
