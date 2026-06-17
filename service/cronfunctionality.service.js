@@ -4,10 +4,19 @@ async function updateAllFunds() {
 
   for (const schemeCode of funds) {
     try {
-      await axios.put(
-        `${process.env.BACKEND_URL}/history/${schemeCode}`
-      );
-
+    const { data } = await axios.get(
+      `${process.env.FUND_HISTORY_API.replace("///", `/${schemeCode}`)}`,
+    );
+    if (!data || !data.data) {
+      console.error(`No data found for scheme code: ${schemeCode}`);
+      continue;
+    }
+    
+    await History.updateOne(
+      { schemeCode },
+      { data: data.data },
+      { upsert: true }
+    );
       console.log(`Updated ${c}`);
       c++;
     } catch (err) {
