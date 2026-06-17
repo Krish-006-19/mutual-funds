@@ -6,7 +6,7 @@ cron.schedule("0 0 * * *", async () => {
     const fiftyFunds = JSON.parse(process.env.FIFTY_FUNDS);
     for(const schemeCode of fiftyFunds) {
         try {
-            await axios.put(`http://localhost:${process.env.PORT}/history/${schemeCode}`);
+            await axios.put(`https://mutual-funds-1.onrender.com/history/${schemeCode}`);
 
             console.log(`Successfully updated history for scheme code ${c}`);
             c++;
