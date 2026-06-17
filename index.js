@@ -7,7 +7,7 @@ const app = express();
 const mongoose = require("mongoose");
 
 mongoose
-  .connect("mongodb://127.0.0.1:27017/marketdb")
+  .connect(process.env.MONGO_URI || "mongodb://127.0.0.1:27017/marketdb")
   .then(() => console.log("Mongo connected!"))
   .catch((err) => console.error(err));
 

@@ -70,7 +70,7 @@ async function getFundHistory(req, res) {
     return res.status(200).json(val.data);
   } catch (err) {
     res.status(500).json({ error: "Failed to fetch data" });
-  }
+  } 
 }
 
 async function replaceFundHistory(req, res) {
