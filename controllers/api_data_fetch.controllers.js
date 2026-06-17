@@ -77,5 +77,4 @@ module.exports = {
   getT50,
   getFundBySchemeCode,
   getFundHistory,
-  replaceFundHistory
 };
