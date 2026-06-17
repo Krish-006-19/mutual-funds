@@ -5,6 +5,7 @@ const historySchema = new mongoose.Schema(
     schemeCode: {
       type: String,
       required: true,
+      unique: true,
     },
     data: [
       {

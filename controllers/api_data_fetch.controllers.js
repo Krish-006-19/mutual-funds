@@ -73,27 +73,6 @@ async function getFundHistory(req, res) {
   } 
 }
 
-async function replaceFundHistory(req, res) {
-  try {
-    const { schemeCode } = req.params;
-    const { data } = await axios.get(
-      `${process.env.FUND_HISTORY_API.replace("///", `/${schemeCode}`)}`,
-    );
-    if (!data || !data.data) {
-      return res.status(404).json({ error: "No data found" });
-    }
-    
-    await History.updateOne(
-      { schemeCode },
-      { data: data.data },
-      { upsert: true }
-    );
-    res.json({ message: "History updated successfully"});
-  } catch (err) {
-    res.status(500).json({ error: "Failed to update data" });
-  }
-}
-
 module.exports = {
   getT50,
   getFundBySchemeCode,

@@ -11,7 +11,6 @@ const {
 
 router.get("/", getT50);
 router.get("/history/:schemeCode", getFundHistory);
-router.patch("/history/:schemeCode", replaceFundHistory);
 router.get("/:schemeCode", getFundBySchemeCode);
 
 module.exports = router;
