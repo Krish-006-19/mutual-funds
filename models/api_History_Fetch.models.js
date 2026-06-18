@@ -10,11 +10,11 @@ const historySchema = new mongoose.Schema(
     data: [
       {
         date: {
-          type: Date,
+          type: String,
           required: true,
         },
         nav: {
-          type: Number,
+          type: String,
           required: true,
         }
       }

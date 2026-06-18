@@ -1,5 +1,6 @@
 const axios = require("axios");
 const History = require("../models/api_History_Fetch.models");
+const { updateAllFunds } = require("../service/cronfunctionality.service.js");
 function parseData(body) {
   if (!body) return [];
 
@@ -63,14 +64,26 @@ async function getFundBySchemeCode(req, res) {
 
 async function getFundHistory(req, res) {
   try {
-    const val = await History.findOne({ schemeCode: req.params.schemeCode });
+    const val = await History.findOne({ schemeCode: req.params.schemeCode }).select("-_id");
     if (!val) {
-      return res.status(404).json({ error: "No history found for this scheme" });
+      return res
+        .status(404)
+        .json({ error: "No history found for this scheme" });
     }
+    const date = new Date()
+      .toISOString()
+      .split("T")[0]
+      .split("-")
+      .reverse()
+      .join("-");
+
+    // if (val.date === date) {
+    //   await updateAllFunds();
+    // }
     return res.status(200).json(val.data);
   } catch (err) {
     res.status(500).json({ error: "Failed to fetch data" });
-  } 
+  }
 }
 
 // async function replaceFundHistory(req, res) {
@@ -82,7 +95,7 @@ async function getFundHistory(req, res) {
 //     if (!data || !data.data) {
 //       return res.status(404).json({ error: "No data found" });
 //     }
-    
+
 //     await History.updateOne(
 //       { schemeCode },
 //       { data: data.data },

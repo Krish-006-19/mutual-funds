@@ -1,3 +1,5 @@
+const axios = require("axios");
+const History = require("../models/api_History_Fetch.models");
 async function updateAllFunds() {
   const funds = JSON.parse(process.env.FIFTY_FUNDS);
   let c = 1;
@@ -14,7 +16,7 @@ async function updateAllFunds() {
     
     await History.updateOne(
       { schemeCode },
-      { data: data.data },
+      { schemeCode: schemeCode, data: data.data },
       { upsert: true }
     );
       console.log(`Updated ${c}`);
