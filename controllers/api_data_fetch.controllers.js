@@ -1,6 +1,7 @@
 const axios = require("axios");
 const History = require("../models/api_History_Fetch.models");
 const { updateAllFunds } = require("../service/cronfunctionality.service.js");
+
 function parseData(body) {
   if (!body) return [];
 
@@ -22,6 +23,26 @@ function parseData(body) {
     });
 }
 
+function convertDate(date) {
+  const monthMap = {
+    jan: "01",
+    feb: "02",
+    mar: "03",
+    apr: "04",
+    may: "05",
+    jun: "06",
+    jul: "07",
+    aug: "08",
+    sep: "09",
+    oct: "10",
+    nov: "11",
+    dec: "12",
+  };
+
+  const [day, month, year] = date.split("-");
+  return `${day}-${monthMap[month.toLowerCase()]}-${year}`;
+}
+
 const T50 = JSON.parse(process.env.FIFTY_FUNDS) || [];
 
 async function getT50(req, res) {
@@ -40,7 +61,6 @@ async function getT50(req, res) {
     res.status(500).json({ error: "Failed to fetch data" });
   }
 }
-
 async function getFundBySchemeCode(req, res) {
   try {
     const { data } = await axios.get(process.env.ALL_FUNDS_API, {
@@ -55,7 +75,6 @@ async function getFundBySchemeCode(req, res) {
     if (!fund) {
       return res.status(404).json({ error: "Scheme not found" });
     }
-
     res.json(fund);
   } catch (err) {
     res.status(500).json({ error: "Failed to fetch data" });
@@ -64,52 +83,38 @@ async function getFundBySchemeCode(req, res) {
 
 async function getFundHistory(req, res) {
   try {
-    const val = await History.findOne({ schemeCode: req.params.schemeCode }).select("-_id");
+    let val = await History.findOne({
+      schemeCode: req.params.schemeCode,
+    });
+    const { data } = await axios.get(process.env.ALL_FUNDS_API, {
+      responseType: "text",
+    });
+
+    const fundData = parseData(data);
+    const fund = fundData.find(
+      (f) => f["Scheme Code"] == req.params.schemeCode,
+    )["Date"];
+
     if (!val) {
       return res
         .status(404)
         .json({ error: "No history found for this scheme" });
     }
-    const date = new Date()
-      .toISOString()
-      .split("T")[0]
-      .split("-")
-      .reverse()
-      .join("-");
 
-    // if (val.date === date) {
-    //   await updateAllFunds();
-    // }
-    return res.status(200).json(val.data);
+    if (convertDate(fund) !== val.data[0].date) {
+      await updateAllFunds();
+      val = await History.findOne({
+        schemeCode: req.params.schemeCode,
+      });
+    }
+    return res.status(200).json(val);
   } catch (err) {
     res.status(500).json({ error: "Failed to fetch data" });
   }
 }
 
-// async function replaceFundHistory(req, res) {
-//   try {
-//     const { schemeCode } = req.params;
-//     const { data } = await axios.get(
-//       `${process.env.FUND_HISTORY_API.replace("///", `/${schemeCode}`)}`,
-//     );
-//     if (!data || !data.data) {
-//       return res.status(404).json({ error: "No data found" });
-//     }
-
-//     await History.updateOne(
-//       { schemeCode },
-//       { data: data.data },
-//       { upsert: true }
-//     );
-//     res.json({ message: "History updated successfully"});
-//   } catch (err) {
-//     res.status(500).json({ error: "Failed to update data" });
-//   }
-// }
-
 module.exports = {
   getT50,
   getFundBySchemeCode,
   getFundHistory,
-  // replaceFundHistory
 };
