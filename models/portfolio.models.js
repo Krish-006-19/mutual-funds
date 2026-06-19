@@ -27,13 +27,7 @@ const portfolioSchema = new mongoose.Schema(
         avgPrice: {
           type: Number,
           required: true,
-        },
-        currentPrice: {
-          type: Number,
-          required: true,
         }
-        // investedAmount: Number,
-        // profitLoss: Number,
       },
     ],
   },

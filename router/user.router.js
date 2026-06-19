@@ -12,7 +12,7 @@ const { verifyToken } = require("../middleware/auth.middleware.js");
 router.get("/", getAllUsers);
 router.post("/register", registerUser);
 router.post("/login", loginUser);
-router.patch("/update/:id", verifyToken, updateUser);
-router.delete("/delete/:id", verifyToken, deleteUser);
+router.patch("/update", verifyToken, updateUser);
+router.delete("/delete", verifyToken, deleteUser);
 
 module.exports = router;

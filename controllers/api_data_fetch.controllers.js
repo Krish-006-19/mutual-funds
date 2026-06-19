@@ -1,6 +1,7 @@
 const axios = require("axios");
 const History = require("../models/api_History_Fetch.models");
 const { updateAllFunds } = require("../service/cronfunctionality.service.js");
+const redis = require("../service/redisSetup.service.js");
 
 function parseData(body) {
   if (!body) return [];
@@ -47,6 +48,11 @@ const T50 = JSON.parse(process.env.FIFTY_FUNDS) || [];
 
 async function getT50(req, res) {
   try {
+    const key = "t50_funds";
+    const cachedData = await redis.get(key);
+    if (cachedData) {
+      return res.json(JSON.parse(cachedData));
+    }
     const { data } = await axios.get(process.env.ALL_FUNDS_API, {
       responseType: "text",
     });
@@ -56,6 +62,9 @@ async function getT50(req, res) {
       T50.includes(Number(fund["Scheme Code"])),
     );
 
+    await redis.set(key, JSON.stringify(fundData), {
+      ex: 86400,
+    });
     res.json(fundData);
   } catch (err) {
     res.status(500).json({ error: "Failed to fetch data" });
@@ -63,6 +72,11 @@ async function getT50(req, res) {
 }
 async function getFundBySchemeCode(req, res) {
   try {
+    const key = `fund:${req.params.schemeCode}`;
+    const cachedData = await redis.get(key);
+    if (cachedData) {
+      return res.json(JSON.parse(cachedData));
+    }
     const { data } = await axios.get(process.env.ALL_FUNDS_API, {
       responseType: "text",
     });
@@ -75,6 +89,9 @@ async function getFundBySchemeCode(req, res) {
     if (!fund) {
       return res.status(404).json({ error: "Scheme not found" });
     }
+    await redis.set(key, JSON.stringify(fund), {
+      ex: 86400,
+    });
     res.json(fund);
   } catch (err) {
     res.status(500).json({ error: "Failed to fetch data" });
@@ -83,6 +100,11 @@ async function getFundBySchemeCode(req, res) {
 
 async function getFundHistory(req, res) {
   try {
+    const key = `fund_history:${req.params.schemeCode}`;
+    const cachedData = await redis.get(key);
+    if (cachedData) {
+      return res.json(JSON.parse(cachedData));
+    }
     let val = await History.findOne({
       schemeCode: req.params.schemeCode,
     });
@@ -107,6 +129,9 @@ async function getFundHistory(req, res) {
         schemeCode: req.params.schemeCode,
       });
     }
+    await redis.set(key, JSON.stringify(val), {
+      ex: 86400,
+    });
     return res.status(200).json(val);
   } catch (err) {
     res.status(500).json({ error: "Failed to fetch data" });

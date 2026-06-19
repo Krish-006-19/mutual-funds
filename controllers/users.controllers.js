@@ -57,7 +57,7 @@ async function loginUser(req, res) {
 
 async function updateUser(req, res) {
   try {
-    const { id } = req.params;
+    const id = req.user.userId;
     const { username, email, password } = req.body;
     const hash = await bcrypt.hash(password, 7);
     const updatedUser = await user.findByIdAndUpdate(
@@ -77,7 +77,7 @@ async function updateUser(req, res) {
 
 async function deleteUser(req, res) {
   try {
-    const { id } = req.params;
+    const id = req.user.userId;
     await Portfolio.deleteOne({ userId: id });
     await trade.deleteMany({ userId: id });
     const deletedUser = await user.findByIdAndDelete(id);

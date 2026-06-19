@@ -10,15 +10,17 @@
     "start": "nodemon index.js"
   },
   "dependencies": {
+    "@upstash/redis": "^1.38.0",
     "axios": "^1.13.2",
     "bcrypt": "^6.0.0",
-    "bullmq": "^5.78.1",
     "cors": "^2.8.6",
     "dotenv": "^17.2.3",
     "express": "^5.1.0",
     "jsonwebtoken": "^9.0.3",
     "mongoose": "^9.7.0",
-    "node-cron": "^4.2.1",
-    "nodemon": "^3.1.11"
+    "node-cron": "^4.2.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.14"
   }
 }

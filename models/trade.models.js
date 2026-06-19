@@ -10,20 +10,17 @@ const tradeSchema = new mongoose.Schema(
     symbol: {
       type: String,
       required: true,
-      unique: true,
     },
     type: {
       type: String,
       enum: ["BUY", "SELL"],
     },
-    quantity: Number,
-    avgPrice: Number,
-    currentPrice: Number,
-    profitLoss: Number,
+    quantity: { type: Number, required: true, min: 0 },
+    price: { type: Number, required: true },
   },
   { timestamps: true },
 );
 
-tradeSchema.index({ userId: 1, symbol: 1 }, { unique: true });
+tradeSchema.index({ userId: 1, createdAt: -1 });
 
 module.exports = mongoose.model("Trade", tradeSchema);

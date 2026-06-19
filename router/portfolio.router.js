@@ -6,8 +6,8 @@ const {
   deleteZeroQuantityFunds,
 } = require("../controllers/portfolio.controllers");
 const {verifyToken} = require("../middleware/auth.middleware");
-router.get("/:id", verifyToken, getPortfolioById);
-router.patch("/:id/:schemeCode", verifyToken, updatePortfolio);
-router.delete("/:id", verifyToken, deleteZeroQuantityFunds);
+router.get("/", verifyToken, getPortfolioById);
+router.delete("/", verifyToken, deleteZeroQuantityFunds);
+router.patch("/:schemeCode", verifyToken, updatePortfolio);
 
 module.exports = router;
