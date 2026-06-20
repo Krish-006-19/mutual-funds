@@ -6,13 +6,13 @@ async function getPortfolioById(req, res) {
     const key = `portfolio:${req.user.userId}`;
     const cachedPortfolio = await redis.get(key);
     if (cachedPortfolio) {
-      return res.status(200).json(JSON.parse(cachedPortfolio));
+      return res.status(200).json(cachedPortfolio);
     }
-    const data = await Portfolio.findOne({ userId: req.user.userId });
+    const data = await Portfolio.findOne({ userId: req.user.userId }).lean();
     if (!data) {
       return res.status(404).json({ message: "Portfolio not found" });
     }
-    await redis.set(key, JSON.stringify(data), {
+    await redis.set(key, data, {
       ex: 86400,
     });
     res.status(200).json(data);
@@ -61,12 +61,12 @@ async function updatePortfolio(req, res) {
           upsert: true,
         },
       );
-      await redis.set(key, JSON.stringify(data), {
+      await redis.set(key, data, {
         ex: 86400,
       });
       return res.status(201).json({ message: "Fund added to portfolio", data });
     }
-    await redis.set(key, JSON.stringify(data), {
+    await redis.set(key, data, {
       ex: 86400,
     });
     res.status(200).json(data);

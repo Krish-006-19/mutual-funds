@@ -18,6 +18,9 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+app.get('/health', (req,res)=>{
+  return res.status(200).json({message: "Welcome to Market for Dummies API"});
+})
 app.use("/leaderboard", require('./router/leaderboard.router.js'));
 app.use("/portfolio", require('./router/portfolio.router.js'));
 app.use("/trade", require('./router/trade.router.js'));

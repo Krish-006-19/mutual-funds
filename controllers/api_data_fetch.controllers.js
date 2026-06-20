@@ -51,7 +51,12 @@ async function getT50(req, res) {
     const key = "t50_funds";
     const cachedData = await redis.get(key);
     if (cachedData) {
-      return res.json(JSON.parse(cachedData));
+      try {
+        return res.json(cachedData);
+      } catch (err) {
+        console.error("Bad cache:", cachedData);
+        await redis.del(key);
+      }
     }
     const { data } = await axios.get(process.env.ALL_FUNDS_API, {
       responseType: "text",
@@ -62,12 +67,15 @@ async function getT50(req, res) {
       T50.includes(Number(fund["Scheme Code"])),
     );
 
-    await redis.set(key, JSON.stringify(fundData), {
-      ex: 86400,
+    await redis.set(key, fundData, {
+      ex: 21600,
     });
     res.json(fundData);
   } catch (err) {
-    res.status(500).json({ error: "Failed to fetch data" });
+    console.error(err);
+    res.status(500).json({
+      error: err.message,
+    });
   }
 }
 async function getFundBySchemeCode(req, res) {
@@ -75,7 +83,12 @@ async function getFundBySchemeCode(req, res) {
     const key = `fund:${req.params.schemeCode}`;
     const cachedData = await redis.get(key);
     if (cachedData) {
-      return res.json(JSON.parse(cachedData));
+      try {
+        return res.json(cachedData);
+      } catch (err) {
+        console.error("Bad cache:", cachedData);
+        await redis.del(key);
+      }
     }
     const { data } = await axios.get(process.env.ALL_FUNDS_API, {
       responseType: "text",
@@ -89,8 +102,8 @@ async function getFundBySchemeCode(req, res) {
     if (!fund) {
       return res.status(404).json({ error: "Scheme not found" });
     }
-    await redis.set(key, JSON.stringify(fund), {
-      ex: 86400,
+    await redis.set(key, fund, {
+      ex: 21600,
     });
     res.json(fund);
   } catch (err) {
@@ -103,7 +116,12 @@ async function getFundHistory(req, res) {
     const key = `fund_history:${req.params.schemeCode}`;
     const cachedData = await redis.get(key);
     if (cachedData) {
-      return res.json(JSON.parse(cachedData));
+      try {
+        return res.json(cachedData);
+      } catch (err) {
+        console.error("Bad cache:", cachedData);
+        await redis.del(key);
+      }
     }
     let val = await History.findOne({
       schemeCode: req.params.schemeCode,
@@ -129,8 +147,8 @@ async function getFundHistory(req, res) {
         schemeCode: req.params.schemeCode,
       });
     }
-    await redis.set(key, JSON.stringify(val), {
-      ex: 86400,
+    await redis.set(key, val, {
+      ex: 21600,
     });
     return res.status(200).json(val);
   } catch (err) {
