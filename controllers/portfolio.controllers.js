@@ -160,7 +160,7 @@ async function updatePortfolio(req, res) {
     await portfolio.save();
     await Trade.create({
       userId: req.user.userId,
-      schemeCode,
+      symbol: schemeCode,
       type,
       quantity,
       price,
