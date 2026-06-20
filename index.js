@@ -5,6 +5,7 @@ const axios = require("axios");
 const cors = require("cors");
 const app = express();
 const mongoose = require("mongoose");
+const helmet = require("helmet");
 
 mongoose
   .connect(process.env.MONGO_URI || "mongodb://127.0.0.1:27017/marketdb")
@@ -15,6 +16,7 @@ app.use(cors({
   origin: "https://market-for-dummies.onrender.com",
   credentials: true
 }));
+app.use(helmet());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
