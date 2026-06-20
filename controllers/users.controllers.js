@@ -3,18 +3,6 @@ const Portfolio = require("../models/portfolio.models");
 const trade = require("../models/trade.models");
 const bcrypt = require("bcrypt");
 const { createToken } = require("../middleware/auth.middleware");
-async function getAllUsers(req, res) {
-  try {
-    const users = await user.find().select("-password");
-    if (users.length === 0) {
-      return res.status(404).json({ error: "No users found" });
-    }
-    res.json(users);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Internal server error" });
-  }
-}
 
 async function registerUser(req, res) {
   try {
@@ -93,7 +81,6 @@ async function deleteUser(req, res) {
 }
 
 module.exports = {
-  getAllUsers,
   registerUser,
   loginUser,
   updateUser,

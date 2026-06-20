@@ -11,11 +11,15 @@ async function getAllTrades(req, res) {
           : cachedTrades,
       );
     }
-    const trades = await trade.find({ userId: req.user.userId }).sort({ createdAt: -1 });
+    const trades = await trade
+      .find({ userId: req.user.userId })
+      .select("-__v -userId")
+      .sort({ createdAt: -1 })
+      .lean();
     if (!trades || trades.length === 0) {
       return res.status(404).json({ error: "No trades found" });
     }
-    await redis.set(key, JSON.stringify(trades));
+    await redis.set(key, trades);
     res.json(trades);
   } catch (err) {
     console.error(err);

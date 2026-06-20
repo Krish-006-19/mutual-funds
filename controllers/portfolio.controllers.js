@@ -1,23 +1,99 @@
 const Portfolio = require("../models/portfolio.models");
 const redis = require("../service/redisSetup.service.js");
+const { getLatestFunds } = require("../service/LatestNav.service.js");
 
 async function getPortfolioById(req, res) {
   try {
     const key = `portfolio:${req.user.userId}`;
+
     const cachedPortfolio = await redis.get(key);
+
     if (cachedPortfolio) {
       return res.status(200).json(cachedPortfolio);
     }
-    const data = await Portfolio.findOne({ userId: req.user.userId }).lean();
-    if (!data) {
-      return res.status(404).json({ message: "Portfolio not found" });
+
+    const portfolio = await Portfolio.findOne({
+      userId: req.user.userId,
+    })
+      .select("-_id -__v -createdAt -updatedAt -userId")
+      .lean();
+
+    if (!portfolio) {
+      return res.status(404).json({
+        message: "Portfolio not found",
+      });
     }
-    await redis.set(key, data, {
-      ex: 86400,
+
+    const fundsData = await getLatestFunds();
+
+    const navMap = {};
+
+    for (const fund of fundsData) {
+      navMap[fund["Scheme Code"]] = Number(
+        fund["Net Asset Value"]
+      );
+    }
+
+    portfolio.funds = portfolio.funds.map((fund) => {
+      const nav = navMap[fund.symbol];
+
+      if (nav === undefined) {
+        return {
+          ...fund,
+          nav: null,
+          investedValue: null,
+          currentValue: null,
+          profitLoss: null,
+          profitLossPercent: null,
+        };
+      }
+
+      const investedValue =
+        fund.quantity * fund.avgPrice;
+
+      const currentValue =
+        fund.quantity * nav;
+
+      const profitLoss =
+        currentValue - investedValue;
+
+      const profitLossPercent =
+        investedValue === 0
+          ? 0
+          : Number(
+              (
+                (profitLoss / investedValue) *
+                100
+              ).toFixed(2)
+            );
+
+      return {
+        ...fund,
+        nav: Number(nav.toFixed(3)),
+        investedValue: Number(
+          investedValue.toFixed(2)
+        ),
+        currentValue: Number(
+          currentValue.toFixed(2)
+        ),
+        profitLoss: Number(
+          profitLoss.toFixed(2)
+        ),
+        profitLossPercent,
+      };
     });
-    res.status(200).json(data);
+
+    await redis.set(key, portfolio, {
+      ex: 21600,
+    });
+
+    return res.status(200).json(portfolio);
   } catch (error) {
-    res.status(500).json({ message: "Error fetching portfolio", error });
+    console.error(error);
+
+    return res.status(500).json({
+      message: "Error fetching portfolio",
+    });
   }
 }
 
@@ -37,7 +113,7 @@ async function updatePortfolio(req, res) {
         },
       },
       {
-        returnDocument: "after",
+        new: true, runValidators: true
       },
     );
 
@@ -58,19 +134,17 @@ async function updatePortfolio(req, res) {
         },
         {
           returnDocument: "after",
+          runValidators: true,
           upsert: true,
         },
       );
-      await redis.set(key, data, {
-        ex: 86400,
-      });
+    await redis.del(key);
       return res.status(201).json({ message: "Fund added to portfolio", data });
     }
-    await redis.set(key, data, {
-      ex: 86400,
-    });
+    await redis.del(key);
     res.status(200).json(data);
   } catch (error) {
+    console.error(error);
     res.status(500).json({ message: "Error updating portfolio", error });
   }
 }
