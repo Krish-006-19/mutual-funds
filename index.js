@@ -12,10 +12,19 @@ mongoose
   .then(() => console.log("Mongo connected!"))
   .catch((err) => console.error(err));
 
-app.use(cors({
-  origin: "https://market-for-dummies.onrender.com",
-  credentials: true
-}));
+// app.use(cors({
+//   origin: "https://market-for-dummies.onrender.com",
+//   credentials: true
+// }));
+app.use(
+  cors({
+    origin: [
+      "https://market-for-dummies.onrender.com",
+      "http://localhost:5173",
+    ],
+    credentials: true,
+  })
+);
 app.use(helmet());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
