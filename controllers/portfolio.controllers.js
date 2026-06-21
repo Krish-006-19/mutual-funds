@@ -111,8 +111,8 @@ async function updatePortfolio(req, res) {
 
     const price = navMap[schemeCode];
 
-    if (!Number.isFinite(price)) {
-      return res.status(404).json({ error: "Scheme not found or NAV invalid" });
+    if (!Number.isFinite(price) || price <= 0) {
+       return res.status(404).json({ error: "Scheme not found or invalid price" });
     }
 
     const fund = portfolio.funds.find((f) => String(f.symbol).trim() === schemeCode);
