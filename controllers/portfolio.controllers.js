@@ -84,53 +84,55 @@ async function getPortfolioById(req, res) {
 
 async function updatePortfolio(req, res) {
   try {
-    let { type } = req.body;
-    let quantity = Number(req.body.quantity);
-    const schemeCode = req.params.schemeCode;
-    if (!["BUY", "SELL"].includes(type) || quantity <= 0) {
-      return res.status(400).json({
-        message: "Invalid input",
-      });
+    const type = String(req.body.type || "").trim().toUpperCase();
+    const quantity = Number(req.body.quantity);
+    const schemeCode = String(req.params.schemeCode || "").trim();
+
+    if (!["BUY", "SELL"].includes(type) || !Number.isFinite(quantity) || quantity <= 0) {
+      return res.status(400).json({ message: "Invalid input" });
     }
-    let portfolio = await Portfolio.findOne({
-      userId: req.user.userId,
-    });
+
+    const portfolio = await Portfolio.findOne({ userId: req.user.userId });
 
     if (!portfolio) {
-      return res.status(404).json({
-        message: "Portfolio not found",
-      });
+      return res.status(404).json({ message: "Portfolio not found" });
+    }
+
+    if (!Array.isArray(portfolio.funds)) {
+      portfolio.funds = [];
     }
 
     const fundData = await getLatestFunds();
-    let navMap = {};
+    const navMap = {};
 
     for (const fund of fundData) {
-      navMap[fund["Scheme Code"]] = Number(fund["Net Asset Value"]);
+      navMap[String(fund["Scheme Code"]).trim()] = Number(fund["Net Asset Value"]);
     }
+
     const price = navMap[schemeCode];
 
-    if (price == null) {
-      return res.status(404).json({ error: "Scheme not found" });
+    if (!Number.isFinite(price)) {
+      return res.status(404).json({ error: "Scheme not found or NAV invalid" });
     }
-    let fund = portfolio.funds.find((f) => f.symbol === schemeCode);
+
+    const fund = portfolio.funds.find((f) => String(f.symbol).trim() === schemeCode);
 
     if (type === "BUY") {
       const cost = quantity * price;
 
+      if (!Number.isFinite(cost)) {
+        return res.status(400).json({ message: "Invalid cost calculation" });
+      }
+
       if (portfolio.remainingBalance < cost) {
-        return res.status(400).json({
-          message: "Insufficient balance",
-        });
+        return res.status(400).json({ message: "Insufficient balance" });
       }
 
       portfolio.remainingBalance -= cost;
 
       if (fund) {
         const newQty = fund.quantity + quantity;
-
-        const newAvg =
-          (fund.quantity * fund.avgPrice + quantity * price) / newQty;
+        const newAvg = ((fund.quantity * fund.avgPrice) + (quantity * price)) / newQty;
 
         fund.quantity = newQty;
         fund.avgPrice = Number(newAvg.toFixed(2));
@@ -138,44 +140,44 @@ async function updatePortfolio(req, res) {
         portfolio.funds.push({
           symbol: schemeCode,
           quantity,
-          avgPrice: price,
+          avgPrice: Number(price.toFixed(2)),
         });
       }
     } else if (type === "SELL") {
       if (!fund) {
-        return res.status(404).json({
-          message: "Fund not found",
-        });
+        return res.status(404).json({ message: "Fund not found" });
       }
 
       if (fund.quantity < quantity) {
-        return res.status(400).json({
-          message: "Not enough units",
-        });
+        return res.status(400).json({ message: "Not enough units" });
       }
 
-      portfolio.remainingBalance += quantity * price;
+      const proceeds = quantity * price;
 
-      fund.quantity -= quantity;
+      if (!Number.isFinite(proceeds)) {
+        return res.status(400).json({ message: "Invalid proceeds calculation" });
+      }
 
-      if (fund.quantity <= 0) {
+      const remainingQty = fund.quantity - quantity;
+      portfolio.remainingBalance += proceeds;
+
+      if (remainingQty === 0) {
         portfolio.funds = portfolio.funds.filter(
-          (f) => f.symbol !== schemeCode,
+          (f) => String(f.symbol).trim() !== schemeCode
         );
+      } else {
+        fund.quantity = remainingQty;
       }
-    } else {
-      return res.status(400).json({
-        message: "Invalid transaction type",
-      });
     }
 
     await portfolio.save();
+
     await Trade.create({
       userId: req.user.userId,
       symbol: schemeCode,
       type,
       quantity,
-      price,
+      price: Number(price.toFixed(2)),
     });
 
     await redis.del(`portfolio:${req.user.userId}`);
@@ -189,7 +191,13 @@ async function updatePortfolio(req, res) {
       });
     }
 
-    console.error(error);
+    console.error("updatePortfolio error:", {
+      message: error.message,
+      stack: error.stack,
+      body: req.body,
+      params: req.params,
+      userId: req.user?.userId,
+    });
 
     return res.status(500).json({
       message: "Error updating portfolio",
