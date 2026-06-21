@@ -591,29 +591,7 @@ The project already includes several useful protections:
 - Helmet for security headers
 - CORS restricted to the deployed frontend origin
 - rate limiting on trade actions
-
----
-
-## Limitations to be aware of
-
-This documentation reflects the current codebase exactly. A few things are important for users of the API:
-- update profile requests should include a password field
-- the leaderboard currently sorts by remaining balance, not by portfolio profit
-- the `GET /` route returns the filtered fund list, not every fund in the source API
-- some Redis cache entries are manually invalidated while others rely on expiration or replacement
-
----
-
-## Suggested next steps
-
-If this project is being turned into a public-facing API or portfolio simulation product, the most useful improvements would be:
-- OpenAPI/Swagger specification
-- example request/response payloads for every endpoint
-- centralized validation middleware
-- stronger error schema consistency
-- pagination for trade history
-- transaction-level consistency for trade updates
-
+  
 ---
 
 ## Final note
