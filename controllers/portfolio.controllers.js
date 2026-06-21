@@ -172,16 +172,16 @@ async function updatePortfolio(req, res) {
 
     await portfolio.save();
 
-    await Trade.create({
-      userId: req.user.userId,
-      symbol: schemeCode,
-      type,
-      quantity,
-      price: Number(price.toFixed(2)),
-    });
+    // await Trade.create({
+    //   userId: req.user.userId,
+    //   symbol: schemeCode,
+    //   type,
+    //   quantity,
+    //   price: Number(price.toFixed(2)),
+    // });
 
-    await redis.del(`portfolio:${req.user.userId}`);
-    await redis.del(`trades:${req.user.userId}`);
+    // await redis.del(`portfolio:${req.user.userId}`);
+    // await redis.del(`trades:${req.user.userId}`);
 
     return res.status(200).json(portfolio);
   } catch (error) {
