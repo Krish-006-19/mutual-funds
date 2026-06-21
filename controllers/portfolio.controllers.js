@@ -179,7 +179,7 @@ async function updatePortfolio(req, res) {
     //   quantity,
     //   price: Number(price.toFixed(2)),
     // });
-
+ 
     await redis.del(`portfolio:${req.user.userId}`);
     // await redis.del(`trades:${req.user.userId}`);
 
