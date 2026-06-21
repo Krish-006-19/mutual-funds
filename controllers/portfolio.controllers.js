@@ -191,17 +191,13 @@ async function updatePortfolio(req, res) {
       });
     }
 
-    console.error("updatePortfolio error:", {
-      message: error.message,
-      stack: error.stack,
-      body: req.body,
-      params: req.params,
-      userId: req.user?.userId,
-    });
+  console.error("PORTFOLIO UPDATE FAILED:", error);
 
-    return res.status(500).json({
-      message: "Error updating portfolio",
-    });
+  return res.status(500).json({
+    message: "Error updating portfolio",
+    error: error.message,
+    name: error.name,
+  });
   }
 }
 
