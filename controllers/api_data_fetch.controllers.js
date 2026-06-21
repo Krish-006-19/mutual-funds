@@ -63,13 +63,14 @@ async function getFundHistory(req, res) {
         error: "Scheme not found",
       });
     }
-    if (!val) {
+    const latd = fund["Date"]
+    if (!val || !val.data?.length) {
       return res
         .status(404)
         .json({ error: "No history found for this scheme" });
     }
 
-    if (convertDate(fund) !== val.data[0].date) {
+    if (convertDate(latd) !== val.data[0].date) {
       await updateAllFunds();
       val = await History.findOne({
         schemeCode: req.params.schemeCode,

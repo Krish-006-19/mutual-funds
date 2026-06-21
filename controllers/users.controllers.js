@@ -13,7 +13,7 @@ async function registerUser(req, res) {
     const hash = await bcrypt.hash(password, 7);
     const newUser = new user({ username, email, password: hash });
     await newUser.save();
-    await Portfolio.create({ userId: newUser._id, funds: [] });
+    await Portfolio.create({ userId: newUser._id, remainingBalance: 10000, funds: [] });
     res.status(201).json({ message: "User created successfully" });
   } catch (err) {
     console.error(err);

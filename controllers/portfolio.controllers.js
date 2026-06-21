@@ -1,7 +1,7 @@
 const Portfolio = require("../models/portfolio.models");
 const redis = require("../service/redisSetup.service.js");
-const { getLatestFunds } = require("../service/LatestNav.service.js");
 const Trade = require("../models/trade.models.js");
+const { getLatestFunds } = require("../service/LatestNav.service.js");
 
 async function getPortfolioById(req, res) {
   try {
@@ -84,9 +84,10 @@ async function getPortfolioById(req, res) {
 
 async function updatePortfolio(req, res) {
   try {
-    const { type, quantity, price } = req.body;
+    let { type } = req.body;
+    let quantity = Number(req.body.quantity);
     const schemeCode = req.params.schemeCode;
-    if (!["BUY", "SELL"].includes(type) || quantity <= 0 || price <= 0) {
+    if (!["BUY", "SELL"].includes(type) || quantity <= 0) {
       return res.status(400).json({
         message: "Invalid input",
       });
@@ -101,6 +102,17 @@ async function updatePortfolio(req, res) {
       });
     }
 
+    const fundData = await getLatestFunds();
+    let navMap = {};
+
+    for (const fund of fundData) {
+      navMap[fund["Scheme Code"]] = Number(fund["Net Asset Value"]);
+    }
+    const price = navMap[schemeCode];
+
+    if (price == null) {
+      return res.status(404).json({ error: "Scheme not found" });
+    }
     let fund = portfolio.funds.find((f) => f.symbol === schemeCode);
 
     if (type === "BUY") {
@@ -171,6 +183,12 @@ async function updatePortfolio(req, res) {
 
     return res.status(200).json(portfolio);
   } catch (error) {
+    if (error.name === "VersionError") {
+      return res.status(409).json({
+        message: "Portfolio was modified by another request. Please retry.",
+      });
+    }
+
     console.error(error);
 
     return res.status(500).json({
@@ -181,5 +199,5 @@ async function updatePortfolio(req, res) {
 
 module.exports = {
   getPortfolioById,
-  updatePortfolio
+  updatePortfolio,
 };

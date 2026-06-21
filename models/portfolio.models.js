@@ -31,7 +31,7 @@ const portfolioSchema = new mongoose.Schema(
       },
     ],
   },
-  { timestamps: true },
+  { timestamps: true, optimisticConcurrency: true },
 );
 
 module.exports = mongoose.model("Portfolio", portfolioSchema);
