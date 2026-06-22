@@ -9,6 +9,10 @@ const portfolioSchema = new mongoose.Schema(
       unique: true,
       index: true,
     },
+    username: {
+      type: String,
+      required: true,
+    },
     remainingBalance: {
       type: Number,
       default: 0,
