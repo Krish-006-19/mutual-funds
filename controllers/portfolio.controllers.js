@@ -184,21 +184,32 @@ async function updatePortfolio(req, res) {
     await redis.del(`trades:${req.user.userId}`);
 
     return res.status(200).json(portfolio);
-  } catch (error) {
-    if (error.name === "VersionError") {
-      return res.status(409).json({
-        message: "Portfolio was modified by another request. Please retry.",
-      });
-    }
+} catch (error) {
+  if (error.name === "VersionError") {
+    return res.status(409).json({
+      message: "Portfolio was modified by another request. Please retry.",
+    });
+  }
 
-  console.error("PORTFOLIO UPDATE FAILED:", error);
+  if (error.code === 11000) {
+    console.error("Duplicate key error in updatePortfolio:", error.message);
+    return res.status(409).json({
+      message: "A conflicting trade record already exists. Please retry.",
+    });
+  }
+
+  console.error("updatePortfolio error:", {
+    message: error.message,
+    stack: error.stack,
+    body: req.body,
+    params: req.params,
+    userId: req.user?.userId,
+  });
 
   return res.status(500).json({
     message: "Error updating portfolio",
-    error: error.message,
-    name: error.name,
   });
-  }
+}
 }
 
 module.exports = {
