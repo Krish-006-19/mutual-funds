@@ -30,7 +30,7 @@ async function getPortfolioById(req, res) {
     const navMap = {};
 
     for (const fund of fundsData) {
-      navMap[fund["Scheme Code"]] = Number(fund["Net Asset Value"]).toFixed(2);
+      navMap[fund["Scheme Code"]] = Number(fund["Net Asset Value"]);
     }
 
     portfolio.funds = portfolio.funds.map((fund) => {
@@ -114,10 +114,10 @@ async function updatePortfolio(req, res) {
     const navMap = {};
 
     for (const fund of fundData) {
-      navMap[String(fund["Scheme Code"]).trim()] = Number(fund["Net Asset Value"]).toFixed(2);
+      navMap[String(fund["Scheme Code"]).trim()] = Number(fund["Net Asset Value"]);
     }
 
-    const price = navMap[schemeCode];
+    const price = Number(navMap[schemeCode].toFixed(2));
 
     if (!Number.isFinite(price) || price <= 0) {
        return res.status(404).json({ error: "Scheme not found or invalid price" });
