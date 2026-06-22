@@ -34,39 +34,47 @@ async function getPortfolioById(req, res) {
     }
 
     portfolio.funds = portfolio.funds.map((fund) => {
-      const nav = navMap[fund.symbol];
+  const nav = navMap[fund.symbol];
 
-      if (nav === undefined) {
-        return {
-          ...fund,
-          nav: null,
-          investedValue: null,
-          currentValue: null,
-          profitLoss: null,
-          profitLossPercent: null,
-        };
-      }
+  if (nav === undefined) {
+    return {
+      ...fund,
+      nav: null,
+      investedValue: null,
+      currentValue: null,
+      profitLoss: null,
+      profitLossPercent: null,
+    };
+  }
 
-      const investedValue = fund.quantity * fund.avgPrice;
+  const investedValue = Number(
+    (fund.quantity * fund.avgPrice).toFixed(2)
+  );
 
-      const currentValue = fund.quantity * nav;
+  const currentValue = Number(
+    (fund.quantity * nav).toFixed(2)
+  );
 
-      const profitLoss = currentValue - investedValue;
+  const profitLoss = Number(
+    (currentValue - investedValue).toFixed(2)
+  );
 
-      const profitLossPercent =
-        investedValue === 0
-          ? 0
-          : Number(((profitLoss / investedValue) * 100).toFixed(3));
+  const profitLossPercent =
+    investedValue === 0
+      ? 0
+      : Number(
+          ((profitLoss / investedValue) * 100).toFixed(2)
+        );
 
-      return {
-        ...fund,
-        nav: Number(nav.toFixed(3)),
-        investedValue: Number(investedValue.toFixed(3)),
-        currentValue: Number(currentValue.toFixed(3)),
-        profitLoss: Number(profitLoss.toFixed(3)),
-        profitLossPercent,
-      };
-    });
+  return {
+    ...fund,
+    nav: Number(nav.toFixed(2)),
+    investedValue,
+    currentValue,
+    profitLoss,
+    profitLossPercent,
+  };
+});
 
     await redis.set(key, portfolio, {
       ex: 21600,
@@ -118,7 +126,7 @@ async function updatePortfolio(req, res) {
     const fund = portfolio.funds.find((f) => String(f.symbol).trim() === schemeCode);
 
     if (type === "BUY") {
-      const cost = quantity * price;
+      const cost = (quantity * price).toFixed(2);
 
       if (!Number.isFinite(cost)) {
         return res.status(400).json({ message: "Invalid cost calculation" });
@@ -131,16 +139,16 @@ async function updatePortfolio(req, res) {
       portfolio.remainingBalance -= cost;
 
       if (fund) {
-        const newQty = fund.quantity + quantity;
-        const newAvg = ((fund.quantity * fund.avgPrice) + (quantity * price)) / newQty;
+        const newQty = (fund.quantity + quantity).toFixed(2);
+        const newAvg = (((fund.quantity * fund.avgPrice) + (quantity * price)) / newQty).toFixed(2);
 
         fund.quantity = newQty;
-        fund.avgPrice = Number(newAvg.toFixed(3));
+        fund.avgPrice = Number(newAvg.toFixed(2));
       } else {
         portfolio.funds.push({
           symbol: schemeCode,
           quantity,
-          avgPrice: Number(price.toFixed(3)),
+          avgPrice: Number(price.toFixed(2)),
         });
       }
     } else if (type === "SELL") {
@@ -152,14 +160,14 @@ async function updatePortfolio(req, res) {
         return res.status(400).json({ message: "Not enough units" });
       }
 
-      const proceeds = quantity * price;
+      const proceeds = (quantity * price).toFixed(2);
 
       if (!Number.isFinite(proceeds)) {
         return res.status(400).json({ message: "Invalid proceeds calculation" });
       }
 
-      const remainingQty = fund.quantity - quantity;
-      portfolio.remainingBalance += proceeds;
+      const remainingQty = (fund.quantity - quantity).toFixed(2);
+      portfolio.remainingBalance = (portfolio.remainingBalance + proceeds).toFixed(2);
 
       if (remainingQty === 0) {
         portfolio.funds = portfolio.funds.filter(
@@ -177,7 +185,7 @@ async function updatePortfolio(req, res) {
       symbol: schemeCode,
       type,
       quantity,
-      price: Number(price.toFixed(3)),
+      price: Number(price.toFixed(2)),
     });
  
     await redis.del(`portfolio:${req.user.userId}`);
