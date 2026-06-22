@@ -4,6 +4,23 @@ const trade = require("../models/trade.models");
 const bcrypt = require("bcrypt");
 const { createToken } = require("../middleware/auth.middleware");
 
+// async function registerUser(req, res) {
+//   try {
+//     const { username, email, password } = req.body;
+//     if (!username || !email || !password) {
+//       return res.status(400).json({ error: "All fields are required" });
+//     }
+//     const hash = await bcrypt.hash(password, 7);
+//     const newUser = new user({ username, email, password: hash });
+//     await newUser.save();
+//     await Portfolio.create({ userId: newUser._id, remainingBalance: 10000, funds: [] });
+//     res.status(201).json({ message: "User created successfully" });
+//   } catch (err) {
+//     console.error(err);
+//     res.status(500).json({ error: "Internal server error" });
+//   }
+// }
+
 async function registerUser(req, res) {
   try {
     const { username, email, password } = req.body;
@@ -13,7 +30,7 @@ async function registerUser(req, res) {
     const hash = await bcrypt.hash(password, 7);
     const newUser = new user({ username, email, password: hash });
     await newUser.save();
-    await Portfolio.create({ userId: newUser._id, remainingBalance: 10000, funds: [] });
+    await Portfolio.create({ userId: newUser._id, remainingBalance: 10000, username, funds: [] });
     res.status(201).json({ message: "User created successfully" });
   } catch (err) {
     console.error(err);
