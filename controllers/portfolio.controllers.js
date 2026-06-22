@@ -123,61 +123,91 @@ async function updatePortfolio(req, res) {
        return res.status(404).json({ error: "Scheme not found or invalid price" });
     }
 
-    const fund = portfolio.funds.find((f) => String(f.symbol).trim() === schemeCode);
+    const fund = portfolio.funds.find(
+  (f) => String(f.symbol).trim() === schemeCode
+);
 
-    if (type === "BUY") {
-      const cost = (quantity * price).toFixed(2);
+if (type === "BUY") {
+  const cost = Number((quantity * price).toFixed(2));
 
-      if (!Number.isFinite(cost)) {
-        return res.status(400).json({ message: "Invalid cost calculation" });
-      }
+  if (!Number.isFinite(cost)) {
+    return res.status(400).json({
+      message: "Invalid cost calculation",
+    });
+  }
 
-      if (portfolio.remainingBalance < cost) {
-        return res.status(400).json({ message: "Insufficient balance" });
-      }
+  if (portfolio.remainingBalance < cost) {
+    return res.status(400).json({
+      message: "Insufficient balance",
+    });
+  }
 
-      portfolio.remainingBalance -= cost;
+  portfolio.remainingBalance = Number(
+    (portfolio.remainingBalance - cost).toFixed(2)
+  );
 
-      if (fund) {
-        const newQty = (fund.quantity + quantity).toFixed(2);
-        const newAvg = (((fund.quantity * fund.avgPrice) + (quantity * price)) / newQty).toFixed(2);
+  if (fund) {
+    const newQty = Number(
+      (fund.quantity + quantity).toFixed(2)
+    );
 
-        fund.quantity = newQty;
-        fund.avgPrice = Number(newAvg.toFixed(2));
-      } else {
-        portfolio.funds.push({
-          symbol: schemeCode,
-          quantity,
-          avgPrice: Number(price.toFixed(2)),
-        });
-      }
-    } else if (type === "SELL") {
-      if (!fund) {
-        return res.status(404).json({ message: "Fund not found" });
-      }
+    const newAvg = Number(
+      (
+        (
+          fund.quantity * fund.avgPrice +
+          quantity * price
+        ) / newQty
+      ).toFixed(2)
+    );
 
-      if (fund.quantity < quantity) {
-        return res.status(400).json({ message: "Not enough units" });
-      }
+    fund.quantity = newQty;
+    fund.avgPrice = newAvg;
+  } else {
+    portfolio.funds.push({
+      symbol: schemeCode,
+      quantity: Number(quantity.toFixed(2)),
+      avgPrice: Number(price.toFixed(2)),
+    });
+  }
+} else {
+  if (!fund) {
+    return res.status(404).json({
+      message: "Fund not found",
+    });
+  }
 
-      const proceeds = (quantity * price).toFixed(2);
+  if (fund.quantity < quantity) {
+    return res.status(400).json({
+      message: "Not enough units",
+    });
+  }
 
-      if (!Number.isFinite(proceeds)) {
-        return res.status(400).json({ message: "Invalid proceeds calculation" });
-      }
+  const proceeds = Number(
+    (quantity * price).toFixed(2)
+  );
 
-      const remainingQty = (fund.quantity - quantity).toFixed(2);
-      portfolio.remainingBalance = (portfolio.remainingBalance + proceeds).toFixed(2);
+  if (!Number.isFinite(proceeds)) {
+    return res.status(400).json({
+      message: "Invalid proceeds calculation",
+    });
+  }
 
-      if (remainingQty === 0) {
-        portfolio.funds = portfolio.funds.filter(
-          (f) => String(f.symbol).trim() !== schemeCode
-        );
-      } else {
-        fund.quantity = remainingQty;
-      }
-    }
+  const remainingQty = Number(
+    (fund.quantity - quantity).toFixed(2)
+  );
 
+  portfolio.remainingBalance = Number(
+    (portfolio.remainingBalance + proceeds).toFixed(2)
+  );
+
+  if (remainingQty <= 0) {
+    portfolio.funds = portfolio.funds.filter(
+      (f) => String(f.symbol).trim() !== schemeCode
+    );
+  } else {
+    fund.quantity = remainingQty;
+  }
+}
     await portfolio.save();
 
     await Trade.create({
