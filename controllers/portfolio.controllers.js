@@ -34,7 +34,7 @@ async function getPortfolioById(req, res) {
     }
 
     portfolio.funds = portfolio.funds.map((fund) => {
-  const nav = navMap[fund.symbol];
+  const nav = Number(navMap[fund.symbol].toFixed(2));
 
   if (nav === undefined) {
     return {
@@ -114,7 +114,7 @@ async function updatePortfolio(req, res) {
     const navMap = {};
 
     for (const fund of fundData) {
-      navMap[String(fund["Scheme Code"]).trim()] = Number(fund["Net Asset Value"]);
+      navMap[fund["Scheme Code"]] = Number(fund["Net Asset Value"]);
     }
 
     const price = Number(navMap[schemeCode].toFixed(2));
