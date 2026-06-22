@@ -56,14 +56,14 @@ async function getPortfolioById(req, res) {
       const profitLossPercent =
         investedValue === 0
           ? 0
-          : Number(((profitLoss / investedValue) * 100).toFixed(2));
+          : Number(((profitLoss / investedValue) * 100).toFixed(3));
 
       return {
         ...fund,
         nav: Number(nav.toFixed(3)),
-        investedValue: Number(investedValue.toFixed(2)),
-        currentValue: Number(currentValue.toFixed(2)),
-        profitLoss: Number(profitLoss.toFixed(2)),
+        investedValue: Number(investedValue.toFixed(3)),
+        currentValue: Number(currentValue.toFixed(3)),
+        profitLoss: Number(profitLoss.toFixed(3)),
         profitLossPercent,
       };
     });
@@ -135,12 +135,12 @@ async function updatePortfolio(req, res) {
         const newAvg = ((fund.quantity * fund.avgPrice) + (quantity * price)) / newQty;
 
         fund.quantity = newQty;
-        fund.avgPrice = Number(newAvg.toFixed(2));
+        fund.avgPrice = Number(newAvg.toFixed(3));
       } else {
         portfolio.funds.push({
           symbol: schemeCode,
           quantity,
-          avgPrice: Number(price.toFixed(2)),
+          avgPrice: Number(price.toFixed(3)),
         });
       }
     } else if (type === "SELL") {
@@ -177,7 +177,7 @@ async function updatePortfolio(req, res) {
       symbol: schemeCode,
       type,
       quantity,
-      price: Number(price.toFixed(2)),
+      price: Number(price.toFixed(3)),
     });
  
     await redis.del(`portfolio:${req.user.userId}`);
