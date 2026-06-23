@@ -6,16 +6,19 @@ const cors = require("cors");
 const app = express();
 const mongoose = require("mongoose");
 const helmet = require("helmet");
+const rateLimit = require("express-rate-limit");
+
+const limiter = rateLimit({
+  windowMs: 2 * 60 * 1000,
+  max: 100,
+});
+
 
 mongoose
   .connect(process.env.MONGO_URI || "mongodb://127.0.0.1:27017/marketdb")
   .then(() => console.log("Mongo connected!"))
   .catch((err) => console.error(err));
 
-// app.use(cors({
-//   origin: "https://market-for-dummies.onrender.com",
-//   credentials: true
-// }));
 app.use(
   cors({
     origin: [
@@ -28,6 +31,8 @@ app.use(
 app.use(helmet());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.set("trust proxy", 1);
+app.use(limiter);
 
 app.get('/health', (req,res)=>{
   return res.status(200).json({message: "Welcome to Market for Dummies API"});
