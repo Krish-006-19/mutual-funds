@@ -35,7 +35,6 @@ async function getPortfolioById(req, res) {
 
     portfolio.funds = portfolio.funds.map((fund) => {
   const nav = Number(navMap[fund.symbol].toFixed(2));
-
   if (nav === undefined) {
     return {
       ...fund,
@@ -112,13 +111,15 @@ async function updatePortfolio(req, res) {
 
     const fundData = await getLatestFunds();
     const navMap = {};
+    const catMap = {};
 
     for (const fund of fundData) {
       navMap[fund["Scheme Code"]] = Number(fund["Net Asset Value"]);
+      catMap[fund["Scheme Code"]] = fund["category"];
     }
 
     const price = Number(navMap[schemeCode].toFixed(2));
-
+    const category = catMap[schemeCode];
     if (!Number.isFinite(price) || price <= 0) {
        return res.status(404).json({ error: "Scheme not found or invalid price" });
     }
@@ -165,6 +166,7 @@ if (type === "BUY") {
   } else {
     portfolio.funds.push({
       symbol: schemeCode,
+      category,
       quantity: Number(quantity.toFixed(2)),
       avgPrice: Number(price.toFixed(2)),
     });
@@ -213,6 +215,7 @@ if (type === "BUY") {
     await Trade.create({
       userId: req.user.userId,
       symbol: schemeCode,
+      category,
       type,
       quantity,
       price: Number(price.toFixed(2)),
