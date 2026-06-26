@@ -7,22 +7,42 @@ const tradeSchema = new mongoose.Schema(
       ref: "User",
       required: true,
     },
+
     symbol: {
       type: String,
       required: true,
     },
-    type: {
-      type: String,
-      enum: ["BUY", "SELL"],
-    },
+
     category: {
       type: String,
       required: true,
     },
-    quantity: { type: Number, required: true, min: 0 },
-    price: { type: Number, required: true },
+
+    type: {
+      type: String,
+      enum: ["BUY", "SELL"],
+      required: true,
+    },
+
+    quantity: {
+      type: Number,
+      required: true,
+      min: 0,
+    },
+
+    price: {
+      type: Number,
+      required: true,
+    },
+
+    amount: {
+      type: Number,
+      required: true,
+    },
   },
-  { timestamps: true },
+  {
+    timestamps: true,
+  }
 );
 
 tradeSchema.index({ userId: 1, createdAt: -1 });

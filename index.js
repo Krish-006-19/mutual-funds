@@ -1,5 +1,6 @@
 require("dotenv").config();
-require("./cronjob.js");
+require("./cron/history.cron.js");
+require("./cron/buy.cron.js");
 const express = require("express");
 const axios = require("axios");
 const cors = require("cors");

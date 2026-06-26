@@ -27,14 +27,15 @@ const portfolioSchema = new mongoose.Schema(
           type: String,
           required: true,
         },
-        quantity: {
+        units: {
           type: Number,
           required: true,
           min: 0,
         },
-        avgPrice: {
+        investedAmt: {
           type: Number,
           required: true,
+          min: 0,
         }
       },
     ],
