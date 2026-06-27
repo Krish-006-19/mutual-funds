@@ -24,6 +24,7 @@ app.use(
   cors({
     origin: [
       "https://market-for-dummies.onrender.com",
+      "https://mutual-funds-six.vercel.app"
       "http://localhost:5173",
     ],
     credentials: true,
