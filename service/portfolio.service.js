@@ -148,6 +148,7 @@ async function updatePortfolio({
             { session },
           );
         }
+        redis.del(`sipData:${userId}:${schemeCode}`);
       } else if (type === "SELL") {
         await sellFund({ schemeCode, quantity, nav, data });
       }
