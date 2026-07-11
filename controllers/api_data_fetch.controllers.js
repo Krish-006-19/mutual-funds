@@ -76,7 +76,9 @@ async function getFundHistory(req, res) {
         schemeCode: req.params.schemeCode,
       }).lean();
     }
-    await redis.set(key, val);
+    await redis.set(key, val,{
+      ex: 60*60*24,
+    });
     return res.status(200).json(val);
   } catch (err) {
     res.status(500).json({ error: "Failed to fetch data" });

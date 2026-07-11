@@ -21,7 +21,9 @@ async function updateAllFunds() {
         { upsert: true },
       );
 
-      redis.set(`fund_history:${schemeCode}`, data.data);
+      redis.set(`fund_history:${schemeCode}`, data.data,{
+      ex: 60*60*24,
+    });
       console.log(`Updated ${c}`);
       c++;
     } catch (err) {
