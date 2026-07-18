@@ -92,6 +92,7 @@ async function updatePortfolioController(req, res) {
         { userId: req.user.userId, schemeCode: req.params.schemeCode },
         { isActive: false }
       );
+      await redis.del(`sipData:${req.user.userId}:${req.params.schemeCode}`);
       return res.status(200).json({ message: "SIP stopped successfully" });
     }
     const portfolio = await updatePortfolio({
