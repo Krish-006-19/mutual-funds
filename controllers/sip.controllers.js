@@ -16,7 +16,7 @@ async function getSipData(req, res) {
     if (!data) {
       return res.status(404).json({ message: "No SIP data found for the given scheme code" });
     }
-    await redis.set(key, data);
+    await redis.set(key, data, {ex:21600});
     res.status(200).json(data);
   } catch (error) {
     res.status(500).json({ message: "Internal server error" });
