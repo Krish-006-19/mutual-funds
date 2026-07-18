@@ -89,7 +89,7 @@ async function updatePortfolioController(req, res) {
     const isStopped = req.body.isStopped;
     if (isStopped) {
       await Sip.findOneAndUpdate(
-        { userId: req.user.userId, schemeCode: req.body.schemeCode },
+        { userId: req.user.userId, schemeCode: req.params.schemeCode },
         { isActive: false }
       );
       return res.status(200).json({ message: "SIP stopped successfully" });
