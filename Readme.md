@@ -14,7 +14,7 @@ The application is built with:
 
 ---
 
-## Architecture
+## Architecture 
 
 The codebase follows a modular structure:
 
